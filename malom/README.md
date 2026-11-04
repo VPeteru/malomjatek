@@ -25,6 +25,14 @@ npm.cmd start
 
 Ezután nyisd meg a böngészőben: **http://localhost:3000**
 
+### Automatikus frissítés a GitHubról
+
+```powershell
+npm.cmd run live
+```
+
+Ugyanúgy elindítja a játékot, de 10 másodpercenként lefuttatja a `git pull`-t is. Ha új változás érkezik a GitHubra, magától letölti (és ha kell, újraindítja a szervert). Neked csak a böngészőt kell frissítened (Ctrl+F5). Leállítás: Ctrl+C.
+
 A multiplayert úgy tudod kipróbálni, hogy két böngészőablakot nyitsz. Az egyikben az „Új online játék”, a másikban a kapott link.
 Ha ugyanazon a wifin lévő telefonról akarsz csatlakozni, használd a PC helyi IP-címét (pl. `http://192.168.1.23:3000`). Ehhez lehet, hogy a Windows tűzfalon engedélyezni kell a Node.js-t.
 
@@ -59,6 +67,7 @@ A Bricolage Grotesque betűtípus a `public/fonts` mappából, helyben töltődi
 | Fájl | Mit csinál |
 |---|---|
 | `server.js` | Express + Socket.IO szerver, szobák kezelése |
+| `auto-pull.js` | Fejlesztői indító (`npm.cmd run live`): futtatja a szervert, és magától lehúzza a GitHubról a változásokat |
 | `shared/engine.js` | A malom teljes szabályrendszere (szerver és böngésző is ezt használja) |
 | `shared/ai.js` | Gépi ellenfél (Élő 0–3000) |
 | `public/ai-worker.js` | A gép külön szálon számol, hogy a felület ne akadjon |

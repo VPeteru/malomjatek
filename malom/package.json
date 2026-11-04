@@ -5,6 +5,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
+    "live": "node auto-pull.js",
     "test": "node test/engine.test.js"
   },
   "dependencies": {
