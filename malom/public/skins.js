@@ -4,8 +4,8 @@
 (function () {
   'use strict';
 
-  // A két játékos színe: rubin és zafír. A keret mindenkinél arany,
-  // a játékost a keret tetején ülő drágakő és a vékony belső gyűrű jelzi.
+  // A két játékos színe: rubin és zafír. A játékost minden keretstílusnál a
+  // színes gyűrű jelzi (az arany keretnél a tetején ülő drágakő is).
   const PALETTES = [
     { c: '#E0475B', d: '#8E1F30', l: '#FFC2CB', glow: '#FF7A8C', name: 'ruby' },
     { c: '#4C8DFF', d: '#1A3F8F', l: '#C7DCFF', glow: '#86B4FF', name: 'sapphire' }
@@ -21,28 +21,66 @@
   function commonDefs(id, p) {
     return lin(id + '-rim', [[0, '#FFF1B8'], [0.22, '#F3D274'], [0.5, '#C9982E'], [0.78, '#E8C25A'], [1, '#7A5814']], 0.15, 0, 0.85, 1) +
       lin(id + '-rimhi', [[0, '#fff', 0.8], [0.5, '#fff', 0]], 0, 0, 0, 1) +
+      lin(id + '-graf', [[0, '#7A8298'], [0.45, '#454D63'], [1, '#262C3D']], 0.2, 0, 0.8, 1) +
       rad(id + '-gem', [[0, '#fff'], [0.3, p.l], [0.7, p.c], [1, p.d]], 0.35, 0.3, 0.7) +
       `<clipPath id="${id}-clip"><circle r="${R_IN}"/></clipPath>`;
   }
 
-  // a keret és a fényezés minden figurán ugyanaz
+  // Keretstílusok. Minden figura az összes keretet tartalmazza, és CSS választja
+  // ki, melyik látszik (a legközelebbi data-frame attribútum alapján), így a
+  // keret átváltásához nem kell semmit újrarajzolni.
+  const FRAMES = [
+    { id: 'letisztult', name: 'Letisztult', nameEn: 'Clean' },
+    { id: 'grafit', name: 'Grafit', nameEn: 'Graphite' },
+    { id: 'szines', name: 'Színes', nameEn: 'Colour' },
+    { id: 'nelkul', name: 'Keret nélkül', nameEn: 'No frame' },
+    { id: 'arany', name: 'Arany', nameEn: 'Gold' }
+  ];
+  const DEFAULT_FRAME = 'letisztult';
+
   function frame(id, p, art, bg) {
     return `
       <ellipse cx="0" cy="44" rx="34" ry="7" fill="rgba(0,0,0,.32)"/>
-      <circle r="48" fill="#3A2A08"/>
-      <circle r="46.5" fill="url(#${id}-rim)"/>
-      <circle r="46.5" fill="none" stroke="url(#${id}-rimhi)" stroke-width="1.6"/>
-      <circle r="42.6" fill="none" stroke="#7A5814" stroke-width=".8" opacity=".7"/>
-      <circle r="${R_IN + 2.2}" fill="#1A1206"/>
-      <g clip-path="url(#${id}-clip)">
-        <circle r="${R_IN}" fill="${bg}"/>
-        ${art}
-        <circle r="${R_IN}" fill="none" stroke="rgba(0,0,0,.45)" stroke-width="5"/>
+      <g class="fr fr-arany">
+        <circle r="48" fill="#3A2A08"/>
+        <circle r="46.5" fill="url(#${id}-rim)"/>
+        <circle r="46.5" fill="none" stroke="url(#${id}-rimhi)" stroke-width="1.6"/>
+        <circle r="42.6" fill="none" stroke="#7A5814" stroke-width=".8" opacity=".7"/>
+        <circle r="${R_IN + 2.2}" fill="#1A1206"/>
       </g>
-      <circle r="${R_IN + 0.6}" fill="none" stroke="${p.c}" stroke-width="2.2"/>
-      <path d="M-31,-20 A37,37 0 0 1 31,-20 C18,-28 -18,-28 -31,-20 Z" fill="#fff" opacity=".2"/>
-      <g class="gem"><path d="M0,-50.5 L6.2,-45 L0,-38.5 L-6.2,-45 Z" fill="url(#${id}-gem)" stroke="#3A2A08" stroke-width="1.2" stroke-linejoin="round"/>
-      <path d="M0,-50.5 L2.6,-46 L0,-44.6 L-2.6,-46 Z" fill="#fff" opacity=".7"/></g>`;
+      <g class="fr fr-letisztult">
+        <circle r="46" fill="#10172B"/>
+        <circle r="45.5" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="1"/>
+      </g>
+      <g class="fr fr-grafit">
+        <circle r="47" fill="url(#${id}-graf)"/>
+        <circle r="46.5" fill="none" stroke="rgba(255,255,255,.16)" stroke-width="1"/>
+        <circle r="${R_IN + 2.4}" fill="#0B0F1A"/>
+      </g>
+      <g class="fr fr-szines">
+        <circle r="47" fill="${p.c}"/>
+        <circle r="46.4" fill="none" stroke="${p.d}" stroke-width="1.2"/>
+        <circle r="${R_IN + 2.4}" fill="#fff" opacity=".92"/>
+      </g>
+      <g class="fr-art">
+        <g clip-path="url(#${id}-clip)">
+          <circle r="${R_IN}" fill="${bg}"/>
+          ${art}
+          <circle r="${R_IN}" fill="none" stroke="rgba(0,0,0,.45)" stroke-width="5"/>
+        </g>
+      </g>
+      <g class="fr fr-arany">
+        <circle r="${R_IN + 0.6}" fill="none" stroke="${p.c}" stroke-width="2.2"/>
+        <path d="M-31,-20 A37,37 0 0 1 31,-20 C18,-28 -18,-28 -31,-20 Z" fill="#fff" opacity=".2"/>
+        <g class="gem"><path d="M0,-50.5 L6.2,-45 L0,-38.5 L-6.2,-45 Z" fill="url(#${id}-gem)" stroke="#3A2A08" stroke-width="1.2" stroke-linejoin="round"/>
+        <path d="M0,-50.5 L2.6,-46 L0,-44.6 L-2.6,-46 Z" fill="#fff" opacity=".7"/></g>
+      </g>
+      <circle class="fr fr-letisztult" r="${R_IN + 3}" fill="none" stroke="${p.c}" stroke-width="3.4"/>
+      <g class="fr fr-grafit">
+        <circle r="${R_IN + 0.6}" fill="none" stroke="${p.c}" stroke-width="2.4"/>
+        <circle cy="-43.2" r="2.6" fill="${p.c}"/>
+      </g>
+      <circle class="fr fr-nelkul" r="45.6" fill="none" stroke="${p.c}" stroke-width="3.2"/>`;
   }
 
   const SKINS = {
@@ -634,8 +672,23 @@
     return `<svg viewBox="-52 -52 104 104" width="${size}" height="${size}" aria-hidden="true"><g>${markup(skin, player)}</g></svg>`;
   }
 
+  // a választott keret már az első rajzolás előtt érvényes legyen
+  function readFrame() {
+    try { const v = JSON.parse(localStorage.getItem('malom-frame')); if (FRAMES.some((f) => f.id === v)) return v; } catch (e) { /* nincs tárhely */ }
+    return DEFAULT_FRAME;
+  }
+  let currentFrame = readFrame();
+  document.documentElement.dataset.frame = currentFrame;
+
+  function setFrame(id) {
+    if (!FRAMES.some((f) => f.id === id)) return;
+    currentFrame = id;
+    document.documentElement.dataset.frame = id;
+    try { localStorage.setItem('malom-frame', JSON.stringify(id)); } catch (e) { /* nincs tárhely */ }
+  }
+
   if (document.body) installDefs();
   else document.addEventListener('DOMContentLoaded', installDefs);
 
-  window.MalomSkins = { SKINS, ORDER, CATEGORIES, PALETTES, svg, markup, installDefs, nameOf };
+  window.MalomSkins = { SKINS, ORDER, CATEGORIES, PALETTES, FRAMES, svg, markup, installDefs, nameOf, setFrame, get frame() { return currentFrame; } };
 })();

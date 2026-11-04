@@ -1078,10 +1078,34 @@
     $('mySkinName').textContent = skinName(prefs.skin);
   }
 
+  // keretstílus-választó: minden gomb a saját keretével mutatja a figurádat
+  function buildFrameChips() {
+    for (const el of [$('frameChips'), $('frameChips2')]) {
+      if (!el) continue;
+      el.innerHTML = '';
+      for (const f of SK.FRAMES) {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'frame-chip';
+        b.dataset.frame = f.id;
+        b.setAttribute('role', 'radio');
+        b.setAttribute('aria-checked', f.id === SK.frame ? 'true' : 'false');
+        b.innerHTML = SK.svg(prefs.skin, 0, 36) + `<span>${escapeHtml(I18N.lang === 'en' ? f.nameEn : f.name)}</span>`;
+        b.addEventListener('click', () => {
+          SK.setFrame(f.id);
+          for (const x of document.querySelectorAll('.frame-chip')) x.setAttribute('aria-checked', x.dataset.frame === f.id ? 'true' : 'false');
+          SND.play('select');
+        });
+        el.appendChild(b);
+      }
+    }
+  }
+
   function pickSkin(k, fromOrbit) {
     prefs.skin = k;
     store.set('malom-skin', k);
     updateMySkin();
+    buildFrameChips();
     buildPicker($('picker'), 0, prefs.skin, (x) => pickSkin(x));
     if (fromOrbit) toast(tr('toast.picked', { name: skinName(k) }));
   }
@@ -1200,6 +1224,7 @@
     buildThemeCards($('themeStrip'), 'tstrip');
     if (themeGridBuilt) { $('themeGrid').innerHTML = ''; buildThemeCards($('themeGrid'), 'tprev'); }
     updateMySkin();
+    buildFrameChips();
     buildOrbit();
     updateAiNote();
     const best = store.get('malom-best-elo', null);
@@ -1240,6 +1265,7 @@
     applyTheme(prefs.theme);
     $('nameInput').value = prefs.name;
     buildPicker($('picker'), 0, prefs.skin, (k) => pickSkin(k));
+    buildFrameChips();
     buildLanding();
     buildEmojiBar();
     soundIcon();
