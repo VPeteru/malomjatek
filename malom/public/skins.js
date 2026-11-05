@@ -4,8 +4,7 @@
 (function () {
   'use strict';
 
-  // A két játékos színe: rubin és zafír. A játékost minden keretstílusnál a
-  // színes gyűrű jelzi (az arany keretnél a tetején ülő drágakő is).
+  // A két játékos színe: rubin és zafír. A játékost a kép körüli színes gyűrű jelzi.
   const PALETTES = [
     { c: '#E0475B', d: '#8E1F30', l: '#FFC2CB', glow: '#FF7A8C', name: 'ruby' },
     { c: '#4C8DFF', d: '#1A3F8F', l: '#C7DCFF', glow: '#86B4FF', name: 'sapphire' }
@@ -21,66 +20,43 @@
   function commonDefs(id, p) {
     return lin(id + '-rim', [[0, '#FFF1B8'], [0.22, '#F3D274'], [0.5, '#C9982E'], [0.78, '#E8C25A'], [1, '#7A5814']], 0.15, 0, 0.85, 1) +
       lin(id + '-rimhi', [[0, '#fff', 0.8], [0.5, '#fff', 0]], 0, 0, 0, 1) +
-      lin(id + '-graf', [[0, '#7A8298'], [0.45, '#454D63'], [1, '#262C3D']], 0.2, 0, 0.8, 1) +
       rad(id + '-gem', [[0, '#fff'], [0.3, p.l], [0.7, p.c], [1, p.d]], 0.35, 0.3, 0.7) +
       `<clipPath id="${id}-clip"><circle r="${R_IN}"/></clipPath>`;
   }
 
-  // Keretstílusok. Minden figura az összes keretet tartalmazza, és CSS választja
-  // ki, melyik látszik (a legközelebbi data-frame attribútum alapján), így a
-  // keret átváltásához nem kell semmit újrarajzolni.
-  const FRAMES = [
-    { id: 'letisztult', name: 'Letisztult', nameEn: 'Clean' },
-    { id: 'grafit', name: 'Grafit', nameEn: 'Graphite' },
-    { id: 'szines', name: 'Színes', nameEn: 'Colour' },
-    { id: 'nelkul', name: 'Keret nélkül', nameEn: 'No frame' },
-    { id: 'arany', name: 'Arany', nameEn: 'Gold' }
+  // Állítható keret. A színt, a vastagságot és a fényességet CSS-változók adják
+  // (--fr-p0/--fr-p1, --fr-scale, --fr-sheen), így a beállítás változásakor
+  // egyetlen figurát sem kell újrarajzolni.
+  const FRAME_OUT = 46; // a keret külső sugara
+  const FRAME_MAX = 12; // a legvastagabb keret
+  const DEFAULT_FRAME = { color: '#10172B', width: 6, sheen: 0, player: false };
+  const FRAME_SWATCHES = [
+    { color: '#10172B', name: 'Éjkék', nameEn: 'Midnight' },
+    { color: '#3A4258', name: 'Grafit', nameEn: 'Graphite' },
+    { color: '#A9B0BF', name: 'Ezüst', nameEn: 'Silver' },
+    { color: '#F3EBDD', name: 'Csont', nameEn: 'Bone' },
+    { color: '#05070D', name: 'Fekete', nameEn: 'Black' },
+    { color: '#7A4E2D', name: 'Dió', nameEn: 'Walnut' },
+    { color: '#2E6B57', name: 'Zöld', nameEn: 'Green' },
+    { color: '#6B3FA0', name: 'Lila', nameEn: 'Purple' }
   ];
-  const DEFAULT_FRAME = 'letisztult';
 
   function frame(id, p, art, bg) {
+    const pl = p.name === 'sapphire' ? 1 : 0;
     return `
       <ellipse cx="0" cy="44" rx="34" ry="7" fill="rgba(0,0,0,.32)"/>
-      <g class="fr fr-arany">
-        <circle r="48" fill="#3A2A08"/>
-        <circle r="46.5" fill="url(#${id}-rim)"/>
-        <circle r="46.5" fill="none" stroke="url(#${id}-rimhi)" stroke-width="1.6"/>
-        <circle r="42.6" fill="none" stroke="#7A5814" stroke-width=".8" opacity=".7"/>
-        <circle r="${R_IN + 2.2}" fill="#1A1206"/>
-      </g>
-      <g class="fr fr-letisztult">
-        <circle r="46" fill="#10172B"/>
-        <circle r="45.5" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="1"/>
-      </g>
-      <g class="fr fr-grafit">
-        <circle r="47" fill="url(#${id}-graf)"/>
-        <circle r="46.5" fill="none" stroke="rgba(255,255,255,.16)" stroke-width="1"/>
-        <circle r="${R_IN + 2.4}" fill="#0B0F1A"/>
-      </g>
-      <g class="fr fr-szines">
-        <circle r="47" fill="${p.c}"/>
-        <circle r="46.4" fill="none" stroke="${p.d}" stroke-width="1.2"/>
-        <circle r="${R_IN + 2.4}" fill="#fff" opacity=".92"/>
-      </g>
+      <circle r="${FRAME_OUT}" style="fill: var(--fr-p${pl}, #10172B)"/>
+      <circle r="${FRAME_OUT}" fill="url(#fr-sheen)" style="opacity: var(--fr-sheen, 0)"/>
+      <circle r="${FRAME_OUT - 0.5}" fill="none" stroke="rgba(0,0,0,.35)" stroke-width="1"/>
       <g class="fr-art">
         <g clip-path="url(#${id}-clip)">
           <circle r="${R_IN}" fill="${bg}"/>
           ${art}
           <circle r="${R_IN}" fill="none" stroke="rgba(0,0,0,.45)" stroke-width="5"/>
         </g>
-      </g>
-      <g class="fr fr-arany">
-        <circle r="${R_IN + 0.6}" fill="none" stroke="${p.c}" stroke-width="2.2"/>
-        <path d="M-31,-20 A37,37 0 0 1 31,-20 C18,-28 -18,-28 -31,-20 Z" fill="#fff" opacity=".2"/>
-        <g class="gem"><path d="M0,-50.5 L6.2,-45 L0,-38.5 L-6.2,-45 Z" fill="url(#${id}-gem)" stroke="#3A2A08" stroke-width="1.2" stroke-linejoin="round"/>
-        <path d="M0,-50.5 L2.6,-46 L0,-44.6 L-2.6,-46 Z" fill="#fff" opacity=".7"/></g>
-      </g>
-      <circle class="fr fr-letisztult" r="${R_IN + 3}" fill="none" stroke="${p.c}" stroke-width="3.4"/>
-      <g class="fr fr-grafit">
-        <circle r="${R_IN + 0.6}" fill="none" stroke="${p.c}" stroke-width="2.4"/>
-        <circle cy="-43.2" r="2.6" fill="${p.c}"/>
-      </g>
-      <circle class="fr fr-nelkul" r="45.6" fill="none" stroke="${p.c}" stroke-width="3.2"/>`;
+        <circle r="${R_IN - 1.3}" fill="none" stroke="${p.c}" stroke-width="2.8"/>
+        <circle r="${R_IN + 0.3}" fill="none" stroke="rgba(0,0,0,.4)" stroke-width=".8"/>
+      </g>`;
   }
 
   const SKINS = {
@@ -654,6 +630,8 @@
     holder.setAttribute('height', '0');
     holder.setAttribute('aria-hidden', 'true');
     holder.style.position = 'absolute';
+    // a keret fényessége: közös, figurától független átmenet
+    defs += lin('fr-sheen', [[0, '#fff', 0.6], [0.42, '#fff', 0], [0.58, '#000', 0], [1, '#000', 0.5]], 0.2, 0, 0.8, 1);
     holder.innerHTML = `<defs>${defs}</defs>`;
     document.body.prepend(holder);
   }
@@ -672,23 +650,41 @@
     return `<svg viewBox="-52 -52 104 104" width="${size}" height="${size}" aria-hidden="true"><g>${markup(skin, player)}</g></svg>`;
   }
 
-  // a választott keret már az első rajzolás előtt érvényes legyen
+  // a beállított keret már az első rajzolás előtt érvényes legyen
+  const HEX = /^#[0-9a-f]{6}$/i;
+  function cleanFrame(v) {
+    const f = { ...DEFAULT_FRAME };
+    if (v && typeof v === 'object') {
+      if (HEX.test(v.color)) f.color = v.color;
+      if (Number.isFinite(v.width)) f.width = Math.min(FRAME_MAX, Math.max(0, Math.round(v.width)));
+      if (Number.isFinite(v.sheen)) f.sheen = Math.min(1, Math.max(0, v.sheen));
+      f.player = v.player === true;
+    }
+    return f;
+  }
   function readFrame() {
-    try { const v = JSON.parse(localStorage.getItem('malom-frame')); if (FRAMES.some((f) => f.id === v)) return v; } catch (e) { /* nincs tárhely */ }
-    return DEFAULT_FRAME;
+    try { return cleanFrame(JSON.parse(localStorage.getItem('malom-frame-v2'))); } catch (e) { return { ...DEFAULT_FRAME }; }
+  }
+  function applyFrame(f) {
+    const st = document.documentElement.style;
+    st.setProperty('--fr-p0', f.player ? PALETTES[0].c : f.color);
+    st.setProperty('--fr-p1', f.player ? PALETTES[1].c : f.color);
+    st.setProperty('--fr-scale', ((FRAME_OUT - f.width) / R_IN).toFixed(4));
+    st.setProperty('--fr-sheen', String(f.sheen));
   }
   let currentFrame = readFrame();
-  document.documentElement.dataset.frame = currentFrame;
+  applyFrame(currentFrame);
 
-  function setFrame(id) {
-    if (!FRAMES.some((f) => f.id === id)) return;
-    currentFrame = id;
-    document.documentElement.dataset.frame = id;
-    try { localStorage.setItem('malom-frame', JSON.stringify(id)); } catch (e) { /* nincs tárhely */ }
+  function setFrame(change) {
+    currentFrame = cleanFrame({ ...currentFrame, ...change });
+    applyFrame(currentFrame);
+    try { localStorage.setItem('malom-frame-v2', JSON.stringify(currentFrame)); } catch (e) { /* nincs tárhely */ }
+    return currentFrame;
   }
+  function resetFrame() { return setFrame(DEFAULT_FRAME); }
 
   if (document.body) installDefs();
   else document.addEventListener('DOMContentLoaded', installDefs);
 
-  window.MalomSkins = { SKINS, ORDER, CATEGORIES, PALETTES, FRAMES, svg, markup, installDefs, nameOf, setFrame, get frame() { return currentFrame; } };
+  window.MalomSkins = { SKINS, ORDER, CATEGORIES, PALETTES, FRAME_SWATCHES, FRAME_MAX, svg, markup, installDefs, nameOf, setFrame, resetFrame, get frame() { return { ...currentFrame }; } };
 })();

@@ -1078,26 +1078,72 @@
     $('mySkinName').textContent = skinName(prefs.skin);
   }
 
-  // keretstílus-választó: minden gomb a saját keretével mutatja a figurádat
-  function buildFrameChips() {
-    for (const el of [$('frameChips'), $('frameChips2')]) {
-      if (!el) continue;
-      el.innerHTML = '';
-      for (const f of SK.FRAMES) {
-        const b = document.createElement('button');
-        b.type = 'button';
-        b.className = 'frame-chip';
-        b.dataset.frame = f.id;
-        b.setAttribute('role', 'radio');
-        b.setAttribute('aria-checked', f.id === SK.frame ? 'true' : 'false');
-        b.innerHTML = SK.svg(prefs.skin, 0, 36) + `<span>${escapeHtml(I18N.lang === 'en' ? f.nameEn : f.name)}</span>`;
+  // állítható figurakeret: szín, vastagság, fényesség, élő előnézettel
+  function buildFrameEditors() {
+    const en = I18N.lang === 'en';
+    const other = prefs.skin === 'robot' ? 'kristaly' : 'robot';
+    ['frameEditor', 'frameEditor2'].forEach((elId, n) => {
+      const el = $(elId);
+      if (!el) return;
+      const swatches = SK.FRAME_SWATCHES.map((w) =>
+        `<button type="button" class="fe-swatch" role="radio" data-color="${w.color}" style="background:${w.color}" aria-label="${escapeHtml(en ? w.nameEn : w.name)}" title="${escapeHtml(en ? w.nameEn : w.name)}"></button>`).join('');
+      el.innerHTML = `
+        <div class="fe-preview" aria-hidden="true">${SK.svg(prefs.skin, 0, 84)}${SK.svg(other, 1, 84)}</div>
+        <div class="fe-controls">
+          <div class="fe-row colors">
+            <span class="fe-label" id="feColorLbl${n}">${escapeHtml(tr('frame.color'))}</span>
+            <div class="fe-swatches" role="radiogroup" aria-labelledby="feColorLbl${n}">
+              ${swatches}
+              <button type="button" class="fe-swatch fe-pl" role="radio" data-player="1" aria-label="${escapeHtml(tr('frame.player'))}" title="${escapeHtml(tr('frame.player'))}"></button>
+              <label class="fe-custom" title="${escapeHtml(tr('frame.custom'))}"><input type="color" class="fe-color" aria-label="${escapeHtml(tr('frame.custom'))}"></label>
+            </div>
+          </div>
+          <label class="fe-row">
+            <span class="fe-label">${escapeHtml(tr('frame.width'))}</span>
+            <input type="range" class="fe-width" min="0" max="${SK.FRAME_MAX}" step="1">
+            <output class="fe-width-out"></output>
+          </label>
+          <label class="fe-row">
+            <span class="fe-label">${escapeHtml(tr('frame.sheen'))}</span>
+            <input type="range" class="fe-sheen" min="0" max="100" step="1">
+            <output class="fe-sheen-out"></output>
+          </label>
+          <div class="fe-actions"><button type="button" class="link-btn fe-reset">${escapeHtml(tr('frame.reset'))}</button></div>
+        </div>`;
+      for (const b of el.querySelectorAll('.fe-swatch')) {
         b.addEventListener('click', () => {
-          SK.setFrame(f.id);
-          for (const x of document.querySelectorAll('.frame-chip')) x.setAttribute('aria-checked', x.dataset.frame === f.id ? 'true' : 'false');
+          SK.setFrame(b.dataset.player ? { player: true } : { player: false, color: b.dataset.color });
+          syncFrameEditors();
           SND.play('select');
         });
-        el.appendChild(b);
       }
+      el.querySelector('.fe-color').addEventListener('input', (e) => { SK.setFrame({ player: false, color: e.target.value }); syncFrameEditors(); });
+      el.querySelector('.fe-width').addEventListener('input', (e) => { SK.setFrame({ width: Number(e.target.value) }); syncFrameEditors(); });
+      el.querySelector('.fe-sheen').addEventListener('input', (e) => { SK.setFrame({ sheen: Number(e.target.value) / 100 }); syncFrameEditors(); });
+      el.querySelector('.fe-reset').addEventListener('click', () => { SK.resetFrame(); syncFrameEditors(); SND.play('select'); });
+    });
+    syncFrameEditors();
+  }
+
+  // mindkét szerkesztő (nyitóoldal és beállítások) ugyanazt mutassa
+  function syncFrameEditors() {
+    const f = SK.frame;
+    const preset = !f.player && SK.FRAME_SWATCHES.some((w) => w.color.toLowerCase() === f.color.toLowerCase());
+    for (const el of [$('frameEditor'), $('frameEditor2')]) {
+      if (!el || !el.firstElementChild) continue;
+      for (const b of el.querySelectorAll('.fe-swatch')) {
+        const on = b.dataset.player ? f.player : (!f.player && b.dataset.color.toLowerCase() === f.color.toLowerCase());
+        b.setAttribute('aria-checked', on ? 'true' : 'false');
+      }
+      const custom = el.querySelector('.fe-custom');
+      custom.setAttribute('aria-checked', !f.player && !preset ? 'true' : 'false');
+      if (!f.player && !preset) custom.style.background = f.color; else custom.style.background = '';
+      const color = el.querySelector('.fe-color');
+      if (document.activeElement !== color) color.value = f.color;
+      el.querySelector('.fe-width').value = f.width;
+      el.querySelector('.fe-width-out').textContent = f.width === 0 ? tr('frame.none') : String(f.width);
+      el.querySelector('.fe-sheen').value = Math.round(f.sheen * 100);
+      el.querySelector('.fe-sheen-out').textContent = Math.round(f.sheen * 100) + '%';
     }
   }
 
@@ -1105,7 +1151,7 @@
     prefs.skin = k;
     store.set('malom-skin', k);
     updateMySkin();
-    buildFrameChips();
+    buildFrameEditors();
     buildPicker($('picker'), 0, prefs.skin, (x) => pickSkin(x));
     if (fromOrbit) toast(tr('toast.picked', { name: skinName(k) }));
   }
@@ -1224,7 +1270,7 @@
     buildThemeCards($('themeStrip'), 'tstrip');
     if (themeGridBuilt) { $('themeGrid').innerHTML = ''; buildThemeCards($('themeGrid'), 'tprev'); }
     updateMySkin();
-    buildFrameChips();
+    buildFrameEditors();
     buildOrbit();
     updateAiNote();
     const best = store.get('malom-best-elo', null);
@@ -1265,7 +1311,7 @@
     applyTheme(prefs.theme);
     $('nameInput').value = prefs.name;
     buildPicker($('picker'), 0, prefs.skin, (k) => pickSkin(k));
-    buildFrameChips();
+    buildFrameEditors();
     buildLanding();
     buildEmojiBar();
     soundIcon();

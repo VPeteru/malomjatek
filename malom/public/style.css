@@ -59,28 +59,36 @@ h1, h2, h3 { text-wrap: balance; }
   * { scrollbar-width: thin; scrollbar-color: var(--line) transparent; }
 }
 
-/* ---------- figurakeretek (a legközelebbi data-frame dönt) ---------- */
-:root, [data-frame="letisztult"] { --fr-letisztult: inline; --fr-grafit: none; --fr-szines: none; --fr-nelkul: none; --fr-arany: none; --fr-scale: 1; }
-[data-frame="grafit"] { --fr-letisztult: none; --fr-grafit: inline; --fr-szines: none; --fr-nelkul: none; --fr-arany: none; --fr-scale: 1; }
-[data-frame="szines"] { --fr-letisztult: none; --fr-grafit: none; --fr-szines: inline; --fr-nelkul: none; --fr-arany: none; --fr-scale: 1; }
-[data-frame="nelkul"] { --fr-letisztult: none; --fr-grafit: none; --fr-szines: none; --fr-nelkul: inline; --fr-arany: none; --fr-scale: 1.2; }
-[data-frame="arany"] { --fr-letisztult: none; --fr-grafit: none; --fr-szines: none; --fr-nelkul: none; --fr-arany: inline; --fr-scale: 1; }
-.fr-letisztult { display: var(--fr-letisztult); }
-.fr-grafit { display: var(--fr-grafit); }
-.fr-szines { display: var(--fr-szines); }
-.fr-nelkul { display: var(--fr-nelkul); }
-.fr-arany { display: var(--fr-arany); }
+/* ---------- állítható figurakeret (a változókat a skins.js állítja) ---------- */
+:root { --fr-p0: #10172B; --fr-p1: #10172B; --fr-scale: 1.0667; --fr-sheen: 0; }
 .fr-art { transform: scale(var(--fr-scale)); }
 
-.frame-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin: 0 0 20px; }
-.frame-label { font-size: 15px; color: var(--muted); font-weight: 600; }
-.frame-chips { display: flex; flex-wrap: wrap; gap: 8px; }
-.frame-chip { appearance: none; display: inline-flex; align-items: center; gap: 8px; padding: 5px 14px 5px 6px; border: 1px solid var(--line); background: transparent; border-radius: var(--radius-s); cursor: pointer; font-weight: 600; font-size: 15px; transition: border-color .2s, background .2s; }
-.frame-chip svg { width: 36px; height: 36px; display: block; flex: none; }
-.frame-chip:hover { border-color: var(--muted); }
-.frame-chip[aria-checked="true"] { background: var(--panel-hi); border-color: var(--bone); }
+.frame-editor { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 18px 28px; align-items: center; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius-l); padding: 18px 22px; margin: 0 0 22px; }
+.fe-preview { display: flex; gap: 12px; }
+.fe-preview svg { width: 84px; height: 84px; display: block; }
+.fe-controls { display: grid; gap: 12px; min-width: 0; }
+.fe-row { display: grid; grid-template-columns: 96px minmax(0, 1fr) 48px; align-items: center; gap: 12px; }
+.fe-row.colors { grid-template-columns: 96px minmax(0, 1fr); }
+.fe-label { font-size: 15px; color: var(--muted); font-weight: 600; }
+.fe-row output { font-size: 15px; color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; }
+.fe-swatches { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.fe-swatch { appearance: none; width: 30px; height: 30px; border-radius: 50%; border: 1px solid rgba(255,255,255,.18); padding: 0; cursor: pointer; box-shadow: 0 0 0 2px transparent; transition: box-shadow .15s; }
+.fe-swatch[aria-checked="true"] { box-shadow: 0 0 0 2px var(--ink), 0 0 0 4px var(--bone); }
+.fe-swatch.fe-pl { background: linear-gradient(90deg, #E0475B 50%, #4C8DFF 50%); }
+.fe-custom { position: relative; width: 30px; height: 30px; border-radius: 50%; overflow: hidden; border: 1px solid rgba(255,255,255,.18); background: conic-gradient(#E0475B, #D9B44A, #2E6B57, #4C8DFF, #6B3FA0, #E0475B); box-shadow: 0 0 0 2px transparent; cursor: pointer; }
+.fe-custom[aria-checked="true"] { box-shadow: 0 0 0 2px var(--ink), 0 0 0 4px var(--bone); }
+.fe-custom input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; border: 0; padding: 0; }
+.fe-actions { display: flex; justify-content: flex-end; }
+.fe-actions .link-btn { margin: 0; padding: 2px 0; font-size: 15px; }
+@media (max-width: 640px) {
+  .frame-editor { grid-template-columns: 1fr; padding: 16px; }
+  .fe-preview { justify-content: center; }
+  .fe-row, .fe-row.colors { grid-template-columns: 1fr 44px; }
+  .fe-row .fe-label { grid-column: 1 / -1; }
+  .fe-row.colors .fe-swatches { grid-column: 1 / -1; }
+}
 .settings h3.set-sub { font-size: 18px; margin: 4px 0 10px; }
-.settings .frame-chips + h3.set-sub { margin-top: 24px; }
+.settings .frame-editor { margin-bottom: 24px; }
 
 /* ---------- gombok ---------- */
 .btn {
