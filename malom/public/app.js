@@ -400,6 +400,8 @@
 
   function render(animate) {
     const svg = $('board');
+    const sk = skinsOf();
+    $('game').classList.toggle('same-skin', sk[0] === sk[1]);
     drawBoard(svg, G.state, skinsOf(), { animate });
     drawHints(svg, G.state, selected, isMyTurn());
     renderPanels();

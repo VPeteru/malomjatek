@@ -5,8 +5,8 @@ Online multiplayer malom (Nine Men's Morris) saját tervezésű figurákkal.
 - **Online két játékos**: szoba 6 karakteres kóddal vagy linkkel, valós idejű lépések, újracsatlakozás, emoji-reakciók, visszavágó
 - **Gép ellen, 0–3000 Élő**: csúszkával állítható erősség (kezdőtől nagymesterig), a gép külön szálon gondolkodik; a legerősebb legyőzött gépet megjegyzi
 - **Két játékos egy gépen**, visszavonással
-- **66 illusztrált figura, 4 kategóriában**: Fantázia (8), Állatok (13), Országok (26 zászló), Foci (18 mez + labda). A két játékost a gyűrű színe (piros / kék) különbözteti meg
-- **Állítható figurakeret**: szín (8 alapszín, a játékos színe vagy bármilyen saját szín), vastagság (0–12, 0 = keret nélkül) és fényesség, élő előnézettel a figuráknál és a beállításokban
+- **66 illusztrált figura, 4 kategóriában**: Fantázia (8), Állatok (13), Országok (26 zászló), Foci (18 mez + labda)
+- **Állítható figurakeret**: szín (8 alapszín, a játékos színe vagy bármilyen saját szín), vastagság (0–12, 0 = keret nélkül) és fényesség, élő előnézettel a figuráknál és a beállításokban. Ha a két játékos ugyanazt a figurát választja, a táblán a keretük piros és kék lesz
 - **Magyar és angol nyelv**: HU/EN váltó a fejlécben és játék közben is; első indításkor a böngésző nyelvét követi
 - **11 tábla-design**: Diófa, Márvány, Neon, Kaszinó filc, Kincses térkép, Jégmező, Vulkán, Királyi bársony, Zen kert, Retro pixel, Galaxis
 - **Hangok**: 12 hangstílus (Alap, Fa és marimba, Retro 8-bit, Sci-fi, Varázslat, Rajzfilm, Minimál, Zongora, Ütős dobok, Üveg és kristály, Elektro, Természet), eseményenként külön hangerő és stílus, fő hangerő, némítás

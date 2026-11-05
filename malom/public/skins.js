@@ -4,7 +4,8 @@
 (function () {
   'use strict';
 
-  // A két játékos színe: rubin és zafír. A játékost a kép körüli színes gyűrű jelzi.
+  // A két játékos színe: rubin és zafír. A keretet a játékos állítja be; ha mindkét
+  // játékos ugyanazt a figurát választja, a játék a keretet pirosra és kékre színezi.
   const PALETTES = [
     { c: '#E0475B', d: '#8E1F30', l: '#FFC2CB', glow: '#FF7A8C', name: 'ruby' },
     { c: '#4C8DFF', d: '#1A3F8F', l: '#C7DCFF', glow: '#86B4FF', name: 'sapphire' }
@@ -54,7 +55,6 @@
           ${art}
           <circle r="${R_IN}" fill="none" stroke="rgba(0,0,0,.45)" stroke-width="5"/>
         </g>
-        <circle r="${R_IN - 1.3}" fill="none" stroke="${p.c}" stroke-width="2.8"/>
         <circle r="${R_IN + 0.3}" fill="none" stroke="rgba(0,0,0,.4)" stroke-width=".8"/>
       </g>`;
   }
