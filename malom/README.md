@@ -49,11 +49,15 @@ gh repo create malom --private --source . --push
 
 ## Online elérhetővé tétel (Render, ingyenes csomag)
 
-1. Regisztrálj a [render.com](https://render.com) oldalon a GitHub-fiókoddal.
-2. **New → Blueprint**, válaszd ki a `malom` repót, és engedélyezd a hozzáférést. A Render a `render.yaml` alapján mindent beállít.
-3. Pár perc múlva kapsz egy `https://malom-arena-xxxx.onrender.com` címet. Ezt küldheted a barátaidnak.
+A beállítás a repó gyökerében lévő `render.yaml` fájlban van (frankfurti szerver, a `malom` mappából indul).
 
-Az ingyenes csomagon a szerver 15 perc tétlenség után elalszik, és az első betöltés kb. fél percig tart. A szobák a memóriában vannak, ezért szerver-újraindításkor elvesznek.
+1. Regisztrálj a [render.com](https://render.com) oldalon a GitHub-fiókoddal.
+2. **New → Blueprint**, válaszd ki a `malomjatek` repót (ha nem látod: *Configure GitHub* → adj hozzáférést a repóhoz), majd **Deploy Blueprint**.
+3. Pár perc múlva a **malom-arena** szolgáltatás oldalán, fent megjelenik a cím (`https://malom-arena….onrender.com`). Ezt küldheted a barátaidnak.
+
+Minden új feltöltés (push a `main` ágra) után a Render magától frissíti az oldalt.
+
+Az ingyenes csomagon a szerver 15 perc tétlenség után elalszik, és az első betöltés kb. egy percig tart. A szobák a memóriában vannak, ezért szerver-újraindításkor (és frissítéskor) elvesznek.
 
 ## Focimezek és jogok
 

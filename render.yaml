@@ -1,0 +1,12 @@
+# Render Blueprint: a játék szervere (Express + Socket.IO) a malom mappából.
+# Render: New -> Blueprint -> ezt a repót választva mindent beállít.
+services:
+  - type: web
+    name: malom-arena
+    runtime: node
+    rootDir: malom
+    region: frankfurt
+    plan: free
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /healthz
