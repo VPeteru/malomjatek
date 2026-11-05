@@ -1,8 +1,10 @@
 /* Fejlesztői indító: elindítja a szervert, és pár másodpercenként lehúzza a
    GitHubról az új változásokat (git pull). Ha a szerveroldali kód változott,
    újraindítja a szervert; a public/ mappa változásaihoz elég frissíteni a
-   böngészőt. Indítás: npm.cmd run live */
+   böngészőt. Indítás: npm run live (Windowson: npm.cmd run live) */
 const { spawn, execFileSync, execSync } = require('child_process');
+const fs = require('fs');
+const path = require('path');
 
 const DIR = __dirname;
 const INTERVAL_MS = Number(process.env.PULL_INTERVAL_MS) || 10000;
@@ -20,12 +22,19 @@ function git(args) {
   return execFileSync('git', args, { cwd: DIR, env: GIT_ENV, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
 }
 
+// friss letöltés után még nincsenek meg a csomagok: ilyenkor telepítjük őket
+function ensureDeps() {
+  if (fs.existsSync(path.join(DIR, 'node_modules', 'express')) && fs.existsSync(path.join(DIR, 'node_modules', 'socket.io'))) return;
+  log('Hiányoznak a csomagok, npm install fut (ez egyszer kell, kb. fél perc)...');
+  try { execSync('npm install', { cwd: DIR, stdio: 'inherit' }); } catch { log('Az npm install nem sikerült. Nézd meg a fenti hibaüzenetet.'); }
+}
+
 function startServer() {
   server = spawn(process.execPath, ['server.js'], { cwd: DIR, stdio: 'inherit' });
   server.on('exit', (code) => {
     server = null;
     if (!stopping && code !== null && code !== 0) {
-      log(`A szerver leállt (kód: ${code}). Ha a 3000-es port foglalt, zárd be a másik futó szervert. A következő változásnál újraindítom.`);
+      log(`A szerver leállt (kód: ${code}). A hiba oka a fenti üzenetben látszik (pl. ha a 3000-es port foglalt, zárd be a másik futó szervert). A következő változásnál újraindítom.`);
     }
   });
 }
@@ -79,5 +88,6 @@ process.on('SIGINT', shutdown);
 process.on('SIGTERM', shutdown);
 
 log(`Indul a szerver, és ${INTERVAL_MS / 1000} másodpercenként keresem a változásokat a GitHubon. Leállítás: Ctrl+C`);
+ensureDeps();
 startServer();
 setTimeout(loop, INTERVAL_MS);

@@ -32,6 +32,8 @@ Ezután nyisd meg a böngészőben: **http://localhost:3000**
 npm.cmd run live
 ```
 
+Macen és Linuxon a Terminálban: `npm run live`. Az első indításkor magától telepíti a hiányzó csomagokat is.
+
 Ugyanúgy elindítja a játékot, de 10 másodpercenként lefuttatja a `git pull`-t is. Ha új változás érkezik a GitHubra, magától letölti (és ha kell, újraindítja a szervert). Neked csak a böngészőt kell frissítened (Ctrl+F5). Leállítás: Ctrl+C.
 
 A multiplayert úgy tudod kipróbálni, hogy két böngészőablakot nyitsz. Az egyikben az „Új online játék”, a másikban a kapott link.
