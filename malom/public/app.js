@@ -173,7 +173,13 @@
     const pieces = layer(svg, 'pieces');
     const mills = layer(svg, 'mills');
     const fx = layer(svg, 'fx');
-    pieces.innerHTML = '';
+    // a változatlan bábukat megtartjuk: így nem kell minden lépésnél
+    // az összes figurát újra felépíteni (ez okozott apró akadásokat)
+    // fontos: a megtartott bábukat nem vesszük ki a DOM-ból, mert az újra
+    // beszúrás újraindítaná a CSS-animációjukat (villogást okozott)
+    const keep = new Map();
+    for (const n of Array.from(pieces.children)) keep.set(n.dataset.i, n);
+    const used = new Set();
     mills.innerHTML = '';
     const lm = opts.animate ? state.lastMove : null;
 
@@ -202,10 +208,20 @@
           extra = { '--dx': (a.x - b.x) + 'px', '--dy': (a.y - b.y) + 'px' };
         }
       }
+      const freshMill = !!(state.millJustFormed && opts.animate && state.millJustFormed.includes(i));
+      const prev = keep.get(String(i));
+      if (prev && !anim && !freshMill && prev.dataset.o === String(o) && prev.dataset.skin === skins[o]) {
+        used.add(prev);
+        continue;
+      }
       const node = pieceNode(i, o, skins[o], anim, extra);
-      if (state.millJustFormed && opts.animate && state.millJustFormed.includes(i)) node.classList.add('in-mill-fresh');
-      pieces.appendChild(node);
+      node.dataset.o = o;
+      node.dataset.skin = skins[o];
+      if (freshMill) node.classList.add('in-mill-fresh');
+      pieces.appendChild(node); // a friss bábu kerül felülre (pl. csúszás közben)
+      used.add(node);
     }
+    for (const n of keep.values()) if (!used.has(n)) n.remove();
 
     // levett bábu "szellem" animációja
     if (lm && lm.type === 'remove' && !reduceMotion) {
@@ -328,9 +344,14 @@
     const svg = boardBase($('demoBoard'));
     let s = E.newGame();
     let skinIdx = SK.ORDER.indexOf(prefs.skin);
+    let hold = 0;
     const step = () => {
       if ($('home').hidden) return;
-      if (s.winner !== null || s.draw || s.moveCount > 26) {
+      // a lerakás (18 lépés) után még bőven lépkednek ide-oda, a végén
+      // egy pillanatig megáll a kép, aztán új játszma indul
+      if (s.winner !== null || s.draw || s.moveCount > 48) {
+        if (hold++ < 2) return;
+        hold = 0;
         s = E.newGame();
         skinIdx = (skinIdx + 1) % SK.ORDER.length;
       }
@@ -566,7 +587,8 @@
     const game = G;
     const before = G.state;
     const started = Date.now();
-    const minDelay = G.state.pendingRemove ? 650 : 520;
+    // emberibb tempó: kicsit vár, és nem mindig ugyanannyit
+    const minDelay = (G.state.pendingRemove ? 820 : 680) + Math.random() * 250;
     aiTimer = setTimeout(() => {}, 0);
     const myTimer = aiTimer;
     think(before, G.level).then((m) => {
@@ -1164,11 +1186,14 @@
     return a;
   }
 
-  // a tábla körül lebegő figurák
+  // a tábla körül lebegő díszfigurák (nem kattinthatók). A középpontjuk a tábla
+  // széle mentén, a mezők közötti negyedeknél van, és a tábla mögött úsznak,
+  // így sosem takarják a tábla bábuit.
   const ORBIT_SPOTS = [
-    { x: -2, y: 4, sz: 84 }, { x: 40, y: -6, sz: 64 }, { x: 82, y: 2, sz: 92 },
-    { x: 90, y: 46, sz: 66 }, { x: 80, y: 84, sz: 80 }, { x: 36, y: 90, sz: 60 },
-    { x: -6, y: 72, sz: 74 }, { x: -8, y: 38, sz: 58 }
+    { x: 26, y: -4, sz: 64 }, { x: 74, y: -5, sz: 56 },
+    { x: 104, y: 27, sz: 66 }, { x: 103, y: 73, sz: 58 },
+    { x: 74, y: 104, sz: 62 }, { x: 26, y: 103, sz: 56 },
+    { x: -3, y: 72, sz: 64 }, { x: -4, y: 28, sz: 58 }
   ];
   function buildOrbit() {
     const orbit = $('orbit');
@@ -1179,23 +1204,23 @@
     for (let i = 0; picks.length < ORBIT_SPOTS.length; i++) picks.push(byCat[i % byCat.length][Math.floor(i / byCat.length)]);
     ORBIT_SPOTS.forEach((spot, i) => {
       const key = picks[i];
-      const b = document.createElement('button');
-      b.type = 'button';
+      const b = document.createElement('span');
       b.style.setProperty('--x', spot.x + '%');
       b.style.setProperty('--y', spot.y + '%');
       b.style.setProperty('--sz', `clamp(${Math.round(spot.sz * 0.6)}px, ${spot.sz / 7}vw, ${spot.sz}px)`);
       b.style.setProperty('--dur', (2.6 + (i % 4) * 0.55) + 's');
       b.style.setProperty('--delay', (-i * 0.7) + 's');
-      b.setAttribute('aria-label', tr('orbit.aria', { name: skinName(key) }));
-      b.title = skinName(key);
       b.innerHTML = SK.svg(key, i % 2, 100);
-      b.addEventListener('click', () => {
-        pickSkin(key, true);
-        SND.play('place');
-        b.classList.remove('picked'); void b.offsetWidth; b.classList.add('picked');
-      });
       orbit.appendChild(b);
     });
+  }
+
+  // képernyőn kívül nem futtatjuk a végtelen animációkat, így a látható részeknek több ideje marad
+  function pauseWhenHidden(el) {
+    if (!el || !('IntersectionObserver' in window)) return;
+    new IntersectionObserver((entries) => {
+      for (const e of entries) e.target.classList.toggle('offscreen', !e.isIntersecting);
+    }).observe(el);
   }
 
   function buildMarquee() {
@@ -1290,6 +1315,8 @@
     updateMySkin();
     buildOrbit();
     buildMarquee();
+    pauseWhenHidden(document.querySelector('.marquee'));
+    pauseWhenHidden($('orbit'));
     buildThemeCards($('themeStrip'), 'tstrip');
     buildRules();
     const best = store.get('malom-best-elo', null);
